@@ -170,11 +170,17 @@ func addIssue(db *sql.DB, title string, message string, user_id int, time int) i
 }
 
 func addTpForIssue(db *sql.DB, issue_id int, tp_id int) {
-	db.Exec("UPDATE issues SET tp_id=$1 WHERE issue_id=$2", tp_id, issue_id)
+	_, err := db.Exec("UPDATE issues SET tp_id=$1 WHERE issue_id=$2", tp_id, issue_id)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func closeIssue(db *sql.DB, issue_id int) {
-	db.Exec("UPDATE issues SET status=$1 WHERE issue_id=$2", 0, issue_id)
+	_, err := db.Exec("UPDATE issues SET status=$1 WHERE issue_id=$2", 0, issue_id)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func addMessage(db *sql.DB, issue_id int, dtype int, message string, time int) int64 {
