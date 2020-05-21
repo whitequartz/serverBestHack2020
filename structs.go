@@ -8,17 +8,23 @@ type outMessage struct {
 type issue struct {
 	ID     int
 	Title  string
-	Time   uint64
+	Time   int64
 	Descr  string
 	IsOpen bool //Status
-	UserID uint64
-	TpID   uint64
+	UserID int64
+	TpID   int64
 }
 
 type chatMessage struct {
-	ID      uint64
-	IssueID uint64
-	Time    uint64
-	Content string
-	MType   uint8 // TODO: type?
+	ID       int64
+	SenderID int64
+	IssueID  int64
+	Time     int64
+	Content  string
+}
+
+type chatMessageRaw struct {
+	Sender int64
+	Dest   int64
+	Data   string
 }

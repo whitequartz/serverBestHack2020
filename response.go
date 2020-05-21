@@ -108,8 +108,15 @@ func makeResponse(message string) (string, int64) {
 		return "", ch
 
 	case "SEND_MSG":
-		data := strings.Trim(message[cmdLen+1:], " ")
-		broadcastTo(1, []byte(data))
+		data := []byte(strings.Trim(message[cmdLen+1:], " "))
+		for i, v := range data {
+			if v == '\n' {
+				data[i] = ' '
+			}
+		}
+		raw := chatMessageRaw{}
+		json.Unmarshal(data, &raw)
+		broadcastTo(raw.Dest, raw)
 		return `{"Succ":true}`, -1
 
 	default:
