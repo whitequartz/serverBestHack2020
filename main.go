@@ -43,8 +43,8 @@ func handleRequest(conn net.Conn) {
 	fmt.Printf("Message: %s", message)
 
 	response, isListen := makeResponse(message)
-	conn.Write([]byte(response))
 	if isListen == -1 {
+		conn.Write([]byte(response))
 		conn.Close()
 	} else {
 		listeners = append(listeners, listenerConn{isListen, conn})
