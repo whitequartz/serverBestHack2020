@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	connHost = "localhost"
+	connHost = ""
 	connPort = "8081"
 	connType = "tcp"
 )

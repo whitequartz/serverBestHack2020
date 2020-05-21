@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -11,16 +12,6 @@ type user struct {
 	password string
 	dname    string
 	tp       int
-}
-
-type issue struct {
-	issue_id    int
-	status      int
-	dname       string
-	content     string
-	user_id     int
-	tp_id       int
-	data_create int
 }
 
 type message struct {
@@ -45,14 +36,14 @@ func register(db *sql.DB, email string, password string, name string, tp int) in
 func getUserId(db *sql.DB, email string) int {
 	result, err := db.Query("SELECT * FROM users WHERE email=$1", email)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	defer result.Close()
 	if result.Next() {
 		user := user{}
 		err = result.Scan(&user.id, &user.email, &user.password, &user.dname, &user.tp)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
 		return user.id
 	}
@@ -63,14 +54,14 @@ func getUserId(db *sql.DB, email string) int {
 func checkPassword(db *sql.DB, email string, password string) string {
 	result, err := db.Query("SELECT * FROM users WHERE email=$1", email)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	defer result.Close()
 	if result.Next() {
 		user := user{}
 		err = result.Scan(&user.id, &user.email, &user.password, &user.dname, &user.tp)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
 		if user.password == password {
 			return user.dname
@@ -83,21 +74,21 @@ func checkPassword(db *sql.DB, email string, password string) string {
 func isTp(db *sql.DB, id int) bool {
 	result, err := db.Query("SELECT * FROM users WHERE id=$1", id)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	defer result.Close()
 	if result.Next() {
 		user := user{}
 		err = result.Scan(&user.id, &user.email, &user.password, &user.dname, &user.tp)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
 		return user.tp == 1
 	}
 	return false
 }
 
-func getIssues(db *sql.DB, id int) []issue {
+func getCurIssues(db *sql.DB, id int) []issue {
 	var result *sql.Rows
 	var err error
 	if isTp(db, id) {
@@ -106,15 +97,59 @@ func getIssues(db *sql.DB, id int) []issue {
 		result, err = db.Query("SELECT * FROM issues WHERE user_id=$1", id)
 	}
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	defer result.Close()
 	var issues []issue
 	for result.Next() {
 		issue := issue{}
-		err := result.Scan(&issue.issue_id, &issue.status, &issue.dname, &issue.content, &issue.user_id, &issue.tp_id, &issue.data_create)
+		var status int
+		err := result.Scan(&issue.ID, &status, &issue.Title, &issue.Descr, &issue.UserID, &issue.TpID, &issue.Time)
+		issue.IsOpen = status == 1
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			continue
+		}
+		issues = append(issues, issue)
+	}
+	return issues
+}
+
+func getUserIssues(db *sql.DB, id int) []issue {
+	result, err := db.Query("SELECT * FROM issues WHERE user_id=$1", id)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer result.Close()
+	var issues []issue
+	for result.Next() {
+		issue := issue{}
+		var status int
+		err := result.Scan(&issue.ID, &status, &issue.Title, &issue.Descr, &issue.UserID, &issue.TpID, &issue.Time)
+		issue.IsOpen = status == 1
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		issues = append(issues, issue)
+	}
+	return issues
+}
+
+func getAllIssues(db *sql.DB) []issue {
+	result, err := db.Query("SELECT * FROM issues")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer result.Close()
+	var issues []issue
+	for result.Next() {
+		issue := issue{}
+		var status int
+		err := result.Scan(&issue.ID, &status, &issue.Title, &issue.Descr, &issue.UserID, &issue.TpID, &issue.Time)
+		issue.IsOpen = status == 1
+		if err != nil {
+			fmt.Println(err)
 			continue
 		}
 		issues = append(issues, issue)
@@ -125,21 +160,21 @@ func getIssues(db *sql.DB, id int) []issue {
 func database() *sql.DB {
 	db, err := sql.Open("sqlite3", "database.db")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	// tp: 0 - user, 1 - tp
 	_, err = db.Exec("CREATE TABLE if not exists users (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email text, password text, dname text, tp INTEGER)")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
-	// status: 0 - bot, 1 - open + tp, 2 - close
+	// status: 1 - open + tp, 0 - close
 	_, err = db.Exec("CREATE TABLE if not exists issues (issue_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, status INTEGER, dname text, content text, user_id INTEGER, tp_id INTEGER, data_create INTEGER)")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, issue_id INTEGER, dtype text, content text, data_create INTEGER)")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	return db
 }
