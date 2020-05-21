@@ -6,22 +6,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type user struct {
-	id       int
-	email    string
-	password string
-	dname    string
-	tp       int
-}
-
-type message struct {
-	msg_id      int
-	issue_id    int
-	dtype       string
-	content     string
-	data_create int
-}
-
 // создаёт запись в дб по заданным параметрам
 func register(db *sql.DB, email string, password string, name string, tp int) int64 {
 	result, err := db.Exec("INSERT INTO users (email,password,dname,tp) VALUES ($1,$2,$3,$4)", email, password, name, tp)
@@ -157,6 +141,25 @@ func getAllIssues(db *sql.DB) []issue {
 	return issues
 }
 
+func getMessagesHistory(db *sql.DB, issue_id int) []chatMessage {
+	result, err := db.Query("SELECT * FROM messages WHERE issue_id=$1", issue_id)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer result.Close()
+	var messages []chatMessage
+	for result.Next() {
+		chatMessage := chatMessage{}
+		err := result.Scan(&chatMessage.ID, &chatMessage.IssueID, &chatMessage.MType, &chatMessage.Content, &chatMessage.Time)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		messages = append(messages, chatMessage)
+	}
+	return messages
+}
+
 func database() *sql.DB {
 	db, err := sql.Open("sqlite3", "database.db")
 	if err != nil {
@@ -172,6 +175,7 @@ func database() *sql.DB {
 	if err != nil {
 		fmt.Println(err)
 	}
+	// dtype: 0 - user, 1 - tp, 2 - bot
 	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, issue_id INTEGER, dtype text, content text, data_create INTEGER)")
 	if err != nil {
 		fmt.Println(err)
