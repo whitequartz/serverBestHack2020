@@ -37,14 +37,41 @@ func handleRequest(conn net.Conn) {
 	if err != nil {
 		fmt.Println("Error reading:", err.Error())
 	}
-	for i := 0; i < len; i++ {
-		if buf[i] == 0 {
-			len = i
-			break
-		}	
-	}
-	fmt.Println(len)
-	fmt.Printf("Message: %s\n", string(buf[:len]))
-	conn.Write([]byte(strings.ToUpper(string(buf[:len]))))
+	buf = buf[0:len]
+	message := string(buf)
+	fmt.Printf("Message: %s", message)
+
+	response := makeResponse(message)
+
+	conn.Write([]byte(response))
 	conn.Close()
+}
+
+type inMessage struct {
+	cmd 	string
+	data	string
+}
+
+type outMessage struct {
+	succ 	bool
+	data	string
+}
+
+
+func makeResponse(message string) string {
+	cmdLen := 0
+	for i, v := range message {
+		if (v == ' ') {
+			cmdLen = i
+			break
+		}
+	}
+	switch message[:cmdLen] {
+	case "TEST":
+		data := strings.Trim(message[cmdLen + 1:], " ")
+		res := strings.ToUpper(data)
+		return res
+	default:
+		return "ERR UKW CMD"
+	}
 }
