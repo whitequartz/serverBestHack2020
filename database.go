@@ -160,6 +160,32 @@ func getMessagesHistory(db *sql.DB, issue_id int) []chatMessage {
 	return messages
 }
 
+func addIssue(db *sql.DB, title string, message string, user_id int, time int) int64 {
+	result, err := db.Exec("INSERT INTO issues (status,dname,content,user_id,tp_id,data_create) VALUES ($1,$2,$3,$4,$5,$6)", 1, title, message, user_id, -1, time)
+	if err != nil {
+		fmt.Println(err)
+	}
+	id, _ := result.LastInsertId()
+	return id
+}
+
+func addTpForIssue(db *sql.DB, issue_id int, tp_id int) {
+	db.Exec("UPDATE issues SET tp_id=$1 WHERE issue_id=$2", tp_id, issue_id)
+}
+
+func closeIssue(db *sql.DB, issue_id int) {
+	db.Exec("UPDATE issues SET status=$1 WHERE issue_id=$2", 0, issue_id)
+}
+
+func addMessage(db *sql.DB, issue_id int, dtype int, message string, time int) int64 {
+	result, err := db.Exec("INSERT INTO message (issue_id,dtype,content,data_create) VALUES ($1,$2,$3,$4)", issue_id, dtype, message, time)
+	if err != nil {
+		fmt.Println(err)
+	}
+	id, _ := result.LastInsertId()
+	return id
+}
+
 func database() *sql.DB {
 	db, err := sql.Open("sqlite3", "database.db")
 	if err != nil {
