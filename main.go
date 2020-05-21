@@ -13,6 +13,8 @@ const (
 )
 
 func main() {
+	initChatsModule()
+
 	l, err := net.Listen(connType, connHost+":"+connPort)
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
@@ -40,8 +42,11 @@ func handleRequest(conn net.Conn) {
 	message := string(buf)
 	fmt.Printf("Message: %s", message)
 
-	response := makeResponse(message)
-
+	response, isListen := makeResponse(message)
 	conn.Write([]byte(response))
-	conn.Close()
+	if isListen == -1 {
+		conn.Close()
+	} else {
+		listeners = append(listeners, listenerConn{isListen, conn})
+	}
 }
