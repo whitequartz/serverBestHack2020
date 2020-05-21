@@ -2,10 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 )
 
-func makeResponse(message string) string {
+func makeResponse(message string) (string, int64) {
 	cmdLen := 0
 	for i, v := range message {
 		if v == ' ' {
@@ -17,7 +18,12 @@ func makeResponse(message string) string {
 	case "TEST":
 		data := strings.Trim(message[cmdLen+1:], " ")
 		res := strings.ToUpper(data)
-		return res
+		out := outMessage{true, res}
+		b, err := json.Marshal(out)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		return string(b), -1
 
 	case "REGISTER":
 		data := strings.Split(message[cmdLen+1:], " ")
@@ -27,9 +33,9 @@ func makeResponse(message string) string {
 		login := data[0]
 		passwd := data[1]
 		if login == "admin" && passwd == "qwerty" {
-			return `{"Succ":false}`
+			return `{"Succ":false}`, -1
 		}
-		return `{"Succ":true}`
+		return `{"Succ":true}`, -1
 
 	case "AUTH":
 		data := strings.Split(message[cmdLen+1:], " ")
@@ -40,11 +46,11 @@ func makeResponse(message string) string {
 			res := outMessage{true, "asfefmiopifjnwoufdsbhnbfhyiasjfdsan"}
 			b, err := json.Marshal(res)
 			if err != nil {
-				return `{"Succ":false}`
+				return `{"Succ":false}`, -1
 			}
-			return string(b)
+			return string(b), -1
 		}
-		return `{"Succ":false}`
+		return `{"Succ":false}`, -1
 
 	case "GET_CUR_ISSUES": // <ID>
 		// TODO: Id
@@ -55,44 +61,58 @@ func makeResponse(message string) string {
 		}
 		b, err := json.Marshal(issues)
 		if err != nil {
-			return `{"Succ":false}`
+			return `{"Succ":false}`, -1
 		}
 		out := outMessage{true, string(b)}
 		b, err = json.Marshal(out)
 		if err != nil {
-			return `{"Succ":false}`
+			return `{"Succ":false}`, -1
 		}
-		return string(b)
+		return string(b), -1
 
 	case "GET_USER_ISSUES": // <ID>
-		// TODO
-		return ""
+		// TODO:
+		return "", -1
 
 	case "GET_OPEN_ISSUES":
-		// TODO
-		return ""
+		// TODO:
+		return "", -1
 
 	case "GET_ALL_ISSUES":
-		// TODO
-		return ""
+		// TODO:
+		return "", -1
 
 	case "GET_HELPER_ISSUES ": // <ID>
 		// TODO
-		return ""
+		return "", -1
 
 	case "GET_ISSUE": // <ID>
 		// TODO
-		return ""
+		return "", -1
 
 	case "GET_SHOP_LIST":
 		// TODO
-		return ""
+		return "", -1
 
 	case "GET_FAQ":
 		// TODO
-		return ""
+		return "", -1
+
+	case "LISTEN":
+		data := strings.Split(message[cmdLen+1:], " ")
+		data[0] = strings.Trim(data[0], " \n\t")
+		ch, err := strconv.ParseInt(data[0], 10, 64)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		return `{"Succ":true}`, ch
+
+	case "SEND_MSG":
+		data := strings.Trim(message[cmdLen+1:], " ")
+		broadcastTo(1, []byte(data))
+		return `{"Succ":true}`, -1
 
 	default:
-		return "ERR UKW CMD"
+		return "ERR UKW CMD", -1
 	}
 }
