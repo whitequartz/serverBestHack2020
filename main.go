@@ -9,19 +9,19 @@ import (
 )
 
 const (
-    CONN_HOST = "localhost"
-    CONN_PORT = "8081"
-    CONN_TYPE = "tcp"
+    connHost = "localhost"
+    connPort = "8081"
+    connType = "tcp"
 )
 
 func main() {
-    l, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
+    l, err := net.Listen(connType, connHost + ":" + connPort)
     if err != nil {
         fmt.Println("Error listening:", err.Error())
         os.Exit(1)
     }
     defer l.Close()
-    fmt.Println("Listening on " + CONN_HOST + ":" + CONN_PORT)
+    fmt.Println("Listening on " + connHost + ":" + connPort)
     for {
         conn, err := l.Accept()
         if err != nil {
@@ -84,8 +84,19 @@ func makeResponse(message string) string {
 		data := strings.Trim(message[cmdLen + 1:], " ")
 		res := strings.ToUpper(data)
 		return res
+
 	case "REGISTER":
-		return ""
+		data := strings.Split(message[cmdLen + 1:], " ")
+		for i := range data {
+			data[i] = strings.Trim(data[i], " \n\t")
+		}
+		login := data[0]
+		passwd := data[1]
+		if login == "admin" && passwd == "qwerty" {
+			return `{"Succ":false}`
+		} 
+		return `{"Succ":true}`
+
 	case "AUTH":
 		data := strings.Split(message[cmdLen + 1:], " ")
 		for i := range data {
@@ -95,32 +106,40 @@ func makeResponse(message string) string {
 			res := outMessage{true, "asfefmiopifjnwoufdsbhnbfhyiasjfdsan"}
 			b, err := json.Marshal(res)
 			if err != nil {
-				return `{"succ":false}`
+				return `{"Succ":false}`
 			}
 			return string(b)
 		}
-		return `{"succ":false}`
+		return `{"Succ":false}`
+
 	case "GET_USER_ISSUES": // <ID>
 		// TODO
 		return ""
+
 	case "GET_OPEN_ISSUES":
 		// TODO
 		return ""
+
 	case "GET_ALL_ISSUES":
 		// TODO
 		return ""
+
 	case "GET_HELPER_ISSUES ": // <ID>
 		// TODO
 		return ""
+
 	case "GET_ISSUE": // <ID>
 		// TODO
 		return ""
+
 	case "GET_SHOP_LIST":
 		// TODO
 		return ""
+
 	case "GET_FAQ":
 		// TODO
-		return "[]"
+		return ""
+
 	default:
 		return "ERR UKW CMD"
 	}
