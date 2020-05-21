@@ -176,7 +176,7 @@ func database() *sql.DB {
 		fmt.Println(err)
 	}
 	// dtype: 0 - user, 1 - tp, 2 - bot
-	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, issue_id INTEGER, dtype text, content text, data_create INTEGER)")
+	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, issue_id INTEGER, dtype INTEGER, content text, data_create INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}
