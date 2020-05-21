@@ -37,7 +37,14 @@ func handleRequest(conn net.Conn) {
 	if err != nil {
 		fmt.Println("Error reading:", err.Error())
 	}
-	fmt.Printf("Message: %s\n", strings.Trim(string(buf[:len]), " "))
-	conn.Write([]byte("Message received"))
+	for i := 0; i < len; i++ {
+		if buf[i] == 0 {
+			len = i
+			break
+		}	
+	}
+	fmt.Println(len)
+	fmt.Printf("Message: %s\n", string(buf[:len]))
+	conn.Write([]byte(strings.ToUpper(string(buf[:len]))))
 	conn.Close()
 }
