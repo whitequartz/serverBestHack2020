@@ -6,7 +6,7 @@ type outMessage struct {
 }
 
 type issue struct {
-	ID     uint64
+	ID     int
 	Title  string
 	Time   uint64
 	Descr  string
