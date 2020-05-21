@@ -68,7 +68,7 @@ func checkPassword(db *sql.DB, email string, password string) string {
 	defer result.Close()
 	if result.Next() {
 		user := user{}
-		err = result.Scan(&user.id, &user.email, &user.password, &user.dname)
+		err = result.Scan(&user.id, &user.email, &user.password, &user.dname, &user.tp)
 		if err != nil {
 			panic(err)
 		}
@@ -80,8 +80,46 @@ func checkPassword(db *sql.DB, email string, password string) string {
 	return ""
 }
 
-func getIssues(db *sql.DB) {
+func isTp(db *sql.DB, id int) bool {
+	result, err := db.Query("SELECT * FROM users WHERE id=$1", id)
+	if err != nil {
+		panic(err)
+	}
+	defer result.Close()
+	if result.Next() {
+		user := user{}
+		err = result.Scan(&user.id, &user.email, &user.password, &user.dname, &user.tp)
+		if err != nil {
+			panic(err)
+		}
+		return user.tp == 1
+	}
+	return false
+}
 
+func getIssues(db *sql.DB, id int) []issue {
+	var result *sql.Rows
+	var err error
+	if isTp(db, id) {
+		result, err = db.Query("SELECT * FROM issues WHERE (tp_id=$1 OR status=$2)", id, 0)
+	} else {
+		result, err = db.Query("SELECT * FROM issues WHERE user_id=$1", id)
+	}
+	if err != nil {
+		panic(err)
+	}
+	defer result.Close()
+	var issues []issue
+	for result.Next() {
+		issue := issue{}
+		err := result.Scan(&issue.issue_id, &issue.status, &issue.dname, &issue.content, &issue.user_id, &issue.tp_id, &issue.data_create)
+		if err != nil {
+			panic(err)
+			continue
+		}
+		issues = append(issues, issue)
+	}
+	return issues
 }
 
 func database() *sql.DB {
@@ -89,10 +127,12 @@ func database() *sql.DB {
 	if err != nil {
 		panic(err)
 	}
+	// tp: 0 - user, 1 - tp
 	_, err = db.Exec("CREATE TABLE if not exists users (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email text, password text, dname text, tp INTEGER)")
 	if err != nil {
 		panic(err)
 	}
+	// status: 0 - bot, 1 - open + tp, 2 - close
 	_, err = db.Exec("CREATE TABLE if not exists issues (issue_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, status INTEGER, dname text, content text, user_id INTEGER, tp_id INTEGER, data_create INTEGER)")
 	if err != nil {
 		panic(err)
