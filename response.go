@@ -105,7 +105,7 @@ func makeResponse(message string) (string, int64) {
 		if err != nil {
 			return `{"Succ":false}`, -1
 		}
-		return `{"Succ":true}`, ch
+		return "", ch
 
 	case "SEND_MSG":
 		data := strings.Trim(message[cmdLen+1:], " ")
