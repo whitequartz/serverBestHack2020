@@ -5,6 +5,11 @@ type outMessage struct {
 	Data string
 }
 
+type authData struct {
+	ID    int64
+	Token string
+}
+
 type issue struct {
 	ID     int
 	Title  string
