@@ -141,8 +141,8 @@ func getAllIssues(db *sql.DB) []issue {
 	return issues
 }
 
-func getMessagesHistory(db *sql.DB, issue_id int) []chatMessage {
-	result, err := db.Query("SELECT * FROM messages WHERE issue_id=$1", issue_id)
+func getMessagesHistory(db *sql.DB, sender_id int) []chatMessage {
+	result, err := db.Query("SELECT * FROM messages WHERE sender_id=$1", sender_id)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -150,7 +150,7 @@ func getMessagesHistory(db *sql.DB, issue_id int) []chatMessage {
 	var messages []chatMessage
 	for result.Next() {
 		chatMessage := chatMessage{}
-		err := result.Scan(&chatMessage.ID, &chatMessage.IssueID, &chatMessage.MType, &chatMessage.Content, &chatMessage.Time)
+		err := result.Scan(&chatMessage.ID, &chatMessage.SenderID, &chatMessage.MType, &chatMessage.Content, &chatMessage.Time)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -183,8 +183,8 @@ func closeIssue(db *sql.DB, issue_id int) {
 	}
 }
 
-func addMessage(db *sql.DB, issue_id int, dtype int, message string, time int) int64 {
-	result, err := db.Exec("INSERT INTO message (issue_id,dtype,content,data_create) VALUES ($1,$2,$3,$4)", issue_id, dtype, message, time)
+func addMessage(db *sql.DB, sender_id int, dtype int, message string, time int) int64 {
+	result, err := db.Exec("INSERT INTO message (sender_id,dtype,content,data_create) VALUES ($1,$2,$3,$4)", sender_id, dtype, message, time)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -198,17 +198,17 @@ func database() *sql.DB {
 		fmt.Println(err)
 	}
 	// tp: 0 - user, 1 - tp
-	_, err = db.Exec("CREATE TABLE if not exists users (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email text, password text, dname text, tp INTEGER)")
+	_, err = db.Exec("CREATE TABLE if not exists users (id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, email text, password text, dname text, tp INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}
 	// status: 1 - open + tp, 0 - close
-	_, err = db.Exec("CREATE TABLE if not exists issues (issue_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, status INTEGER, dname text, content text, user_id INTEGER, tp_id INTEGER, data_create INTEGER)")
+	_, err = db.Exec("CREATE TABLE if not exists issues (issue_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, status INTEGER, dname text, content text, user_id INTEGER, tp_id INTEGER, data_create INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}
 	// dtype: 0 - user, 1 - tp, 2 - bot
-	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, issue_id INTEGER, dtype INTEGER, content text, data_create INTEGER)")
+	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, sender_id INTEGER, dtype INTEGER, content text, data_create INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}
