@@ -52,7 +52,7 @@ func makeResponse(message string) (string, int64) {
 		if id == -1 {
 			return `{"Succ":false}`, -1 // неправильный пароль
 		}
-		encryptMsg, _ := encrypt(key, fmt.Sprint(id))
+		encryptMsg, _ := encrypt(key, string(id))
 		res := authData{id, encryptMsg}
 		b, err := json.Marshal(res)
 		if err != nil {
@@ -184,6 +184,24 @@ func makeResponse(message string) (string, int64) {
 		id, _ := strconv.Atoi(data[0])
 		messages := getMessagesHistory(db, id)
 		b, err := json.Marshal(messages)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		out := outMessage{true, string(b)}
+		b, err = json.Marshal(out)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		return string(b), -1
+
+	case "GET_DEVICES":
+		data := strings.Split(message[cmdLen+1:], " ")
+		for i := range data {
+			data[i] = strings.Trim(data[i], " \n\t")
+		}
+		// id, _ := strconv.Atoi(data[0])
+		arr := []usersDevices{}
+		b, err := json.Marshal(arr)
 		if err != nil {
 			return `{"Succ":false}`, -1
 		}
