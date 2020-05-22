@@ -6,22 +6,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type user struct {
-	id       int
-	email    string
-	password string
-	dname    string
-	tp       int
-}
-
-type message struct {
-	msg_id      int
-	issue_id    int
-	dtype       string
-	content     string
-	data_create int
-}
-
 // создаёт запись в дб по заданным параметрам
 func register(db *sql.DB, email string, password string, name string, tp int) int64 {
 	result, err := db.Exec("INSERT INTO users (email,password,dname,tp) VALUES ($1,$2,$3,$4)", email, password, name, tp)
@@ -157,22 +141,74 @@ func getAllIssues(db *sql.DB) []issue {
 	return issues
 }
 
+func getMessagesHistory(db *sql.DB, sender_id int) []chatMessage {
+	result, err := db.Query("SELECT * FROM messages WHERE sender_id=$1", sender_id)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer result.Close()
+	var messages []chatMessage
+	for result.Next() {
+		chatMessage := chatMessage{}
+		err := result.Scan(&chatMessage.ID, &chatMessage.SenderID, &chatMessage.MType, &chatMessage.Content, &chatMessage.Time)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		messages = append(messages, chatMessage)
+	}
+	return messages
+}
+
+func addIssue(db *sql.DB, title string, message string, user_id int, time int) int64 {
+	result, err := db.Exec("INSERT INTO issues (status,dname,content,user_id,tp_id,data_create) VALUES ($1,$2,$3,$4,$5,$6)", 1, title, message, user_id, -1, time)
+	if err != nil {
+		fmt.Println(err)
+	}
+	id, _ := result.LastInsertId()
+	return id
+}
+
+func addTpForIssue(db *sql.DB, issue_id int, tp_id int) {
+	_, err := db.Exec("UPDATE issues SET tp_id=$1 WHERE issue_id=$2", tp_id, issue_id)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func closeIssue(db *sql.DB, issue_id int) {
+	_, err := db.Exec("UPDATE issues SET status=$1 WHERE issue_id=$2", 0, issue_id)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func addMessage(db *sql.DB, sender_id int, dtype int, message string, time int) int64 {
+	result, err := db.Exec("INSERT INTO message (sender_id,dtype,content,data_create) VALUES ($1,$2,$3,$4)", sender_id, dtype, message, time)
+	if err != nil {
+		fmt.Println(err)
+	}
+	id, _ := result.LastInsertId()
+	return id
+}
+
 func database() *sql.DB {
 	db, err := sql.Open("sqlite3", "database.db")
 	if err != nil {
 		fmt.Println(err)
 	}
 	// tp: 0 - user, 1 - tp
-	_, err = db.Exec("CREATE TABLE if not exists users (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email text, password text, dname text, tp INTEGER)")
+	_, err = db.Exec("CREATE TABLE if not exists users (id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, email text, password text, dname text, tp INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}
 	// status: 1 - open + tp, 0 - close
-	_, err = db.Exec("CREATE TABLE if not exists issues (issue_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, status INTEGER, dname text, content text, user_id INTEGER, tp_id INTEGER, data_create INTEGER)")
+	_, err = db.Exec("CREATE TABLE if not exists issues (issue_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, status INTEGER, dname text, content text, user_id INTEGER, tp_id INTEGER, data_create INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}
-	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, issue_id INTEGER, dtype text, content text, data_create INTEGER)")
+	// dtype: 0 - user, 1 - tp, 2 - bot
+	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, sender_id INTEGER, dtype INTEGER, content text, data_create INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}

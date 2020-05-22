@@ -6,30 +6,38 @@ type outMessage struct {
 }
 
 type authData struct {
-	ID    int64
+	ID    int
 	Token string
 }
 
 type issue struct {
 	ID     int
 	Title  string
-	Time   int64
+	Time   int
 	Descr  string
 	IsOpen bool //Status
-	UserID int64
-	TpID   int64
+	UserID int
+	TpID   int
 }
 
 type chatMessage struct {
-	ID       int64
-	SenderID int64
-	IssueID  int64
-	Time     int64
+	ID       int
+	SenderID int
+	Time     int
 	Content  string
+	MType    int // 0 - user, 1 - tp, 2 - bot
+}
+
+type user struct {
+	id       int
+	email    string
+	password string
+	dname    string
+	tp       int
 }
 
 type chatMessageRaw struct {
-	Sender int64
-	Dest   int64
+	Sender int
+	Dest   int
 	Data   string
 }
