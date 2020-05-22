@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var db = database()
@@ -161,7 +162,32 @@ func makeResponse(message string) (string, int64) {
 		raw := chatMessageRaw{}
 		json.Unmarshal(data, &raw)
 		broadcastTo(raw.Dest, raw)
+		if raw.Sender == -1 {
+			addMessage(db, raw.Sender, raw.Dest, -1, raw.Data, int(time.Now().Unix()))
+		} else if isTp(db, raw.Sender) {
+			addMessage(db, raw.Sender, raw.Dest, 1, raw.Data, int(time.Now().Unix()))
+		} else {
+			addMessage(db, raw.Sender, raw.Dest, 0, raw.Data, int(time.Now().Unix()))
+		}
 		return `{"Succ":true}`, -1
+
+	case "HISTORY":
+		data := strings.Split(message[cmdLen+1:], " ")
+		for i := range data {
+			data[i] = strings.Trim(data[i], " \n\t")
+		}
+		id, _ := strconv.Atoi(data[0])
+		messages := getMessagesHistory(db, id)
+		b, err := json.Marshal(messages)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		out := outMessage{true, string(b)}
+		b, err = json.Marshal(out)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		return string(b), -1
 
 	default:
 		return "ERR UKW CMD", -1

@@ -26,7 +26,7 @@ type chatMessage struct {
 	IssueID  int
 	Time     int
 	Content  string
-	MType    int // 0 - user, 1 - tp, 2 - bot
+	MType    int // 0 - user, 1 - tp, -1 - bot
 }
 
 type user struct {

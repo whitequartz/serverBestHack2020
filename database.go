@@ -140,8 +140,8 @@ func getAllIssues(db *sql.DB) []issue {
 	return issues
 }
 
-func getMessagesHistory(db *sql.DB, sender_id int) []chatMessage {
-	result, err := db.Query("SELECT * FROM messages WHERE sender_id=$1", sender_id)
+func getMessagesHistory(db *sql.DB, issue_id int) []chatMessage {
+	result, err := db.Query("SELECT * FROM messages WHERE issue_id=$1", issue_id)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -206,7 +206,7 @@ func database() *sql.DB {
 	if err != nil {
 		fmt.Println(err)
 	}
-	// dtype: 0 - user, 1 - tp, 2 - bot
+	// dtype: 0 - user, 1 - tp, -1 - bot
 	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, sender_id INTEGER, issue_id INTEGER, dtype INTEGER, content text, data_create INTEGER)")
 	if err != nil {
 		fmt.Println(err)
