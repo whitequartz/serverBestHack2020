@@ -207,6 +207,15 @@ func makeResponse(message string) (string, int64) {
 		}
 		return string(b), -1
 
+	case "CREATE_ISSUE":
+		data := strings.Split(message[cmdLen+1:], " ")
+		for i := range data {
+			data[i] = strings.Trim(data[i], " \n\t")
+		}
+		// id, _ := strconv.Atoi(data[0])
+		// TODO
+		return `{"Succ":true,"Data":` + strconv.FormatInt(31, 10) + `}`, -1
+
 	default:
 		return "ERR UKW CMD", -1
 	}
