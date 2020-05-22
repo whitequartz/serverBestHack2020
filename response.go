@@ -218,6 +218,15 @@ func makeResponse(message string) (string, int64) {
 		addIssue(db, "", data, getUserId(db, email), int(time.Now().Unix()))
 		return `{"Succ":true}`, -1
 
+	case "ADD_ISSUE":
+		data := strings.Split(message[cmdLen+1:], " ")
+		for i := range data {
+			data[i] = strings.Trim(data[i], " \n\t")
+		}
+		id, _ := strconv.Atoi(data[0])
+		iid := addIssue(db, "", "", id, int(time.Now().Unix()))
+		return `{"Succ":true,"Data":"` + fmt.Sprint(iid) + `"}`, -1
+
 	default:
 		return "ERR UKW CMD", -1
 	}
