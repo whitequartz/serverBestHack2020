@@ -52,7 +52,7 @@ func makeResponse(message string) (string, int64) {
 		if id == -1 {
 			return `{"Succ":false}`, -1 // неправильный пароль
 		}
-		encryptMsg, _ := encrypt(key, string(id))
+		encryptMsg, _ := encrypt(key, fmt.Sprint(id))
 		res := authData{id, encryptMsg}
 		b, err := json.Marshal(res)
 		if err != nil {
@@ -68,6 +68,11 @@ func makeResponse(message string) (string, int64) {
 	case "CHECK_TOKEN":
 		data := strings.Trim(message[cmdLen+1:], " \n")
 		msg, err := decrypt(key, data)
+		fmt.Println(msg)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		_, err = strconv.Atoi(msg)
 		if err != nil {
 			return `{"Succ":false}`, -1
 		}
