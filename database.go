@@ -7,8 +7,8 @@ import (
 )
 
 // создаёт запись в дб по заданным параметрам
-func register(db *sql.DB, email string, password string, name string, tp int) int64 {
-	result, err := db.Exec("INSERT INTO users (email,password,dname,tp) VALUES ($1,$2,$3,$4)", email, password, name, tp)
+func register(db *sql.DB, email string, password string, name string) int64 {
+	result, err := db.Exec("INSERT INTO users (email,password,dname,tp) VALUES ($1,$2,$3,$4)", email, password, name, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +35,7 @@ func getUserId(db *sql.DB, email string) int {
 }
 
 // если пароль для email верный, то возращает имя, иначе пустую строку
-func checkPassword(db *sql.DB, email string, password string) string {
+func checkPassword(db *sql.DB, email string, password string) int {
 	result, err := db.Query("SELECT * FROM users WHERE email=$1", email)
 	if err != nil {
 		fmt.Println(err)
@@ -48,11 +48,10 @@ func checkPassword(db *sql.DB, email string, password string) string {
 			fmt.Println(err)
 		}
 		if user.Password == password {
-			return user.Dname
+			return user.ID
 		}
-		return ""
 	}
-	return ""
+	return -1
 }
 
 func isTp(db *sql.DB, id int) bool {

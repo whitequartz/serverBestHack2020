@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+var db = database()
+
 func makeResponse(message string) (string, int64) {
 	cmdLen := 0
 	for i, v := range message {
@@ -32,45 +34,50 @@ func makeResponse(message string) (string, int64) {
 		}
 		login := data[0]
 		passwd := data[1]
-		if login == "admin" && passwd == "qwerty" {
-			return `{"Succ":false}`, -1
+		name := data[2]
+		if getUserId(db, login) == -1 {
+			register(db, login, passwd, name)
+			return `{"Succ":true}`, -1
 		}
-		return `{"Succ":true}`, -1
+		return `{"Succ":false}`, -1
 
 	case "AUTH":
 		data := strings.Split(message[cmdLen+1:], " ")
 		for i := range data {
 			data[i] = strings.Trim(data[i], " \n\t")
 		}
-		if data[0] == "admin" && data[1] == "qwerty" {
-			res := authData{31, "asfefmiopifjfnwoufdsbhnbfhyiasjfdsan"} // TODO: Id
-			b, err := json.Marshal(res)
-			if err != nil {
-				return `{"Succ":false}`, -1
-			}
-			out := outMessage{true, string(b)}
-			b, err = json.Marshal(out)
-			if err != nil {
-				return `{"Succ":false}`, -1
-			}
-			return string(b), -1
+		id := checkPassword(db, data[0], data[1])
+		if id == -1 {
+			return `{"Succ":false}`, -1 // неправильный пароль
 		}
-		return `{"Succ":false}`, -1
+		encryptMsg, _ := encrypt(key, string(id))
+		res := authData{id, encryptMsg}
+		b, err := json.Marshal(res)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		out := outMessage{true, string(b)}
+		b, err = json.Marshal(out)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		return string(b), -1
 
 	case "CHECK_TOKEN":
 		data := strings.Trim(message[cmdLen+1:], " \n")
-		if data == "asfefmiopifjfnwoufdsbhnbfhyiasjfdsan" {
-			return `{"Succ":true,"Data":"` + strconv.FormatInt(31, 10) + `"}`, -1 // TODO: Id
+		msg, err := decrypt(key, data)
+		if err != nil {
+			return `{"Succ":false}`, -1
 		}
-		return `{"Succ":false}`, -1
+		return `{"Succ":true,"Data":"` + msg + `"}`, -1
 
 	case "GET_CUR_ISSUES": // <ID>
-		// TODO: Id
-		issues := []issue{
-			{1, "Title 1", 0, "Solve my problem!", true, 1, 10001},
-			{2, "Title 2", 0, "Solve my problem too!", true, 2, 10001},
-			{3, "Title 3", 0, "Description", true, 3, 10001},
+		data := strings.Split(message[cmdLen+1:], " ")
+		for i := range data {
+			data[i] = strings.Trim(data[i], " \n\t")
 		}
+		id, _ := strconv.Atoi(data[0])
+		issues := getCurIssues(db, id)
 		b, err := json.Marshal(issues)
 		if err != nil {
 			return `{"Succ":false}`, -1
@@ -83,16 +90,39 @@ func makeResponse(message string) (string, int64) {
 		return string(b), -1
 
 	case "GET_USER_ISSUES": // <ID>
-		// TODO:
-		return "", -1
+		data := strings.Split(message[cmdLen+1:], " ")
+		for i := range data {
+			data[i] = strings.Trim(data[i], " \n\t")
+		}
+		id, _ := strconv.Atoi(data[0])
+		issues := getUserIssues(db, id)
+		b, err := json.Marshal(issues)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		out := outMessage{true, string(b)}
+		b, err = json.Marshal(out)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		return string(b), -1
 
 	case "GET_OPEN_ISSUES":
 		// TODO:
 		return "", -1
 
 	case "GET_ALL_ISSUES":
-		// TODO:
-		return "", -1
+		issues := getAllIssues(db)
+		b, err := json.Marshal(issues)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		out := outMessage{true, string(b)}
+		b, err = json.Marshal(out)
+		if err != nil {
+			return `{"Succ":false}`, -1
+		}
+		return string(b), -1
 
 	case "GET_HELPER_ISSUES ": // <ID>
 		// TODO
@@ -128,7 +158,7 @@ func makeResponse(message string) (string, int64) {
 		}
 		raw := chatMessageRaw{}
 		json.Unmarshal(data, &raw)
-		broadcastTo(raw.Dest, raw)
+		broadcastTo(int64(raw.Dest), raw)
 		return `{"Succ":true}`, -1
 
 	default:
