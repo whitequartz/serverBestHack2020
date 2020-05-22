@@ -199,8 +199,8 @@ func makeResponse(message string) (string, int64) {
 		for i := range data {
 			data[i] = strings.Trim(data[i], " \n\t")
 		}
-		// id, _ := strconv.Atoi(data[0])
-		arr := []usersDevices{}
+		id, _ := strconv.Atoi(data[0])
+		arr := getDevices(db, id)
 		b, err := json.Marshal(arr)
 		if err != nil {
 			return `{"Succ":false}`, -1
@@ -211,6 +211,28 @@ func makeResponse(message string) (string, int64) {
 			return `{"Succ":false}`, -1
 		}
 		return string(b), -1
+
+	case "ADD_DEVICE":
+		data := strings.Split(message[cmdLen+1:], " ")
+		for i := range data {
+			data[i] = strings.Trim(data[i], " \n\t")
+		}
+		id, _ := strconv.Atoi(data[0])
+		dtype, _ := strconv.Atoi(data[1])
+		cost, _ := strconv.Atoi(data[3])
+		buy_time, _ := strconv.Atoi(data[4])
+		valid_time, _ := strconv.Atoi(data[5])
+		iid := addDevice(db, id, dtype, data[2], cost, buy_time, valid_time)
+		return `{"Succ":true,"Data":"` + fmt.Sprint(iid) + `"}`, -1
+
+	case "REMOVE_ISSUE":
+		data := strings.Split(message[cmdLen+1:], " ")
+		for i := range data {
+			data[i] = strings.Trim(data[i], " \n\t")
+		}
+		id, _ := strconv.Atoi(data[0])
+		removeIssue(db, id)
+		return `{"Succ":true}`, -1
 
 	case "EMAIL":
 		email := strings.Split(message[cmdLen+1:], " ")[0]

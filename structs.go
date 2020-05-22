@@ -44,6 +44,8 @@ type chatMessageRaw struct {
 }
 
 type usersDevices struct {
+	ID        int
+	UserID    int // владелец
 	Type      int
 	Model     string
 	Cost      int

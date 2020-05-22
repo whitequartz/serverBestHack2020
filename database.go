@@ -168,6 +168,13 @@ func addIssue(db *sql.DB, title string, message string, user_id int, time int) i
 	return id
 }
 
+func removeIssue(db *sql.DB, issue_id int) {
+	_, err := db.Exec("DELETE FROM issues WHERE issue_id=$1", issue_id)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func addTpForIssue(db *sql.DB, issue_id int, tp_id int) {
 	_, err := db.Exec("UPDATE issues SET tp_id=$1 WHERE issue_id=$2", tp_id, issue_id)
 	if err != nil {
@@ -182,8 +189,36 @@ func closeIssue(db *sql.DB, issue_id int) {
 	}
 }
 
-func addMessage(db *sql.DB, sender_id int, issue_id, dtype int, message string, time int) int64 {
+func addMessage(db *sql.DB, sender_id int, issue_id int, dtype int, message string, time int) int64 {
 	result, err := db.Exec("INSERT INTO messages (sender_id,issue_id,dtype,content,data_create) VALUES ($1,$2,$3,$4,$5)", sender_id, issue_id, dtype, message, time)
+	if err != nil {
+		fmt.Println(err)
+	}
+	id, _ := result.LastInsertId()
+	return id
+}
+
+func getDevices(db *sql.DB, user_id int) []usersDevices {
+	result, err := db.Query("SELECT * FROM devices WHERE user_id=$1", user_id)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer result.Close()
+	devices := []usersDevices{}
+	for result.Next() {
+		device := usersDevices{}
+		err := result.Scan(&device.ID, &device.UserID, &device.Type, &device.Model, &device.Cost, &device.BuyTime, &device.ValidTime)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		devices = append(devices, device)
+	}
+	return devices
+}
+
+func addDevice(db *sql.DB, user_id int, dtype int, model string, cost int, buy_time int, valid_time int) int64 {
+	result, err := db.Exec("INSERT INTO devices (user_id,dtype,model,cost,buy_time,valid_time) VALUES ($1,$2,$3,$4,$5,$6)", user_id, dtype, model, cost, buy_time, valid_time)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -208,6 +243,10 @@ func database() *sql.DB {
 	}
 	// dtype: 0 - user, 1 - tp, -1 - bot
 	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, sender_id INTEGER, issue_id INTEGER, dtype INTEGER, content text, data_create INTEGER)")
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = db.Exec("CREATE TABLE if not exists devices (device_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, user_id INTEGER, dtype INTEGER, model text, cost INTEGER, buy_time INTEGER, valid_time INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}
