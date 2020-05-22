@@ -42,3 +42,11 @@ type chatMessageRaw struct {
 	Dest   int
 	Data   string
 }
+
+type usersDevices struct {
+	Type      int
+	Model     string
+	Cost      int
+	BuyTime   int
+	ValidTime int
+}
