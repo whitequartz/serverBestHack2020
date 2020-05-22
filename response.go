@@ -194,6 +194,12 @@ func makeResponse(message string) (string, int64) {
 		}
 		return string(b), -1
 
+	case "EMAIL":
+		email := strings.Split(message[cmdLen+1:], " ")[0]
+		data := strings.Trim(message[cmdLen+len(email)+1:], " \n")
+		addIssue(db, "", data, getUserId(db, email), int(time.Now().Unix()))
+		return `{"Succ":true}`, -1
+
 	default:
 		return "ERR UKW CMD", -1
 	}
