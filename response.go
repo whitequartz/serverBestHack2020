@@ -43,7 +43,7 @@ func makeResponse(message string) (string, int64) {
 			data[i] = strings.Trim(data[i], " \n\t")
 		}
 		if data[0] == "admin" && data[1] == "qwerty" {
-			res := authData{31, "asfefmiopifjnwoufdsbhnbfhyiasjfdsan"} // TODO: Id
+			res := authData{31, "asfefmiopifjfnwoufdsbhnbfhyiasjfdsan"} // TODO: Id
 			b, err := json.Marshal(res)
 			if err != nil {
 				return `{"Succ":false}`, -1
@@ -58,9 +58,9 @@ func makeResponse(message string) (string, int64) {
 		return `{"Succ":false}`, -1
 
 	case "CHECK_TOKEN":
-		data := strings.Trim(message[cmdLen+1:], " ")
-		if data == "asfefmiopifjnwoufdsbhnbfhyiasjfdsan" {
-			return `{"Succ":true,"Data":"` + string(31) + `"}`, -1 // TODO: Id
+		data := strings.Trim(message[cmdLen+1:], " \n")
+		if data == "asfefmiopifjfnwoufdsbhnbfhyiasjfdsan" {
+			return `{"Succ":true,"Data":"` + strconv.FormatInt(31, 10) + `"}`, -1 // TODO: Id
 		}
 		return `{"Succ":false}`, -1
 
