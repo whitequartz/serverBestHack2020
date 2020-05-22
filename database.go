@@ -183,7 +183,7 @@ func closeIssue(db *sql.DB, issue_id int) {
 }
 
 func addMessage(db *sql.DB, sender_id int, issue_id, dtype int, message string, time int) int64 {
-	result, err := db.Exec("INSERT INTO message (sender_id,issue_id,dtype,content,data_create) VALUES ($1,$2,$3,$4)", sender_id, issue_id, dtype, message, time)
+	result, err := db.Exec("INSERT INTO message (sender_id,issue_id,dtype,content,data_create) VALUES ($1,$2,$3,$4,$5)", sender_id, issue_id, dtype, message, time)
 	if err != nil {
 		fmt.Println(err)
 	}
