@@ -5,6 +5,11 @@ type outMessage struct {
 	Data string
 }
 
+type authData struct {
+	ID    int64
+	Token string
+}
+
 type issue struct {
 	ID     int
 	Title  string
@@ -29,4 +34,15 @@ type user struct {
 	password string
 	dname    string
 	tp       int
+	ID       int64
+	SenderID int64
+	IssueID  int64
+	Time     int64
+	Content  string
+}
+
+type chatMessageRaw struct {
+	Sender int
+	Dest   int
+	Data   string
 }

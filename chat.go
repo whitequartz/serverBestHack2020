@@ -1,6 +1,11 @@
 package main
 
-import "net"
+import (
+	"encoding/json"
+	"fmt"
+	"net"
+	"time"
+)
 
 type listenerConn struct {
 	chID int64
@@ -13,7 +18,15 @@ func initChatsModule() {
 	listeners = make([]listenerConn, 0)
 }
 
-func broadcastTo(chID int64, data []byte) {
+func broadcastTo(chID int64, msg chatMessageRaw) {
+	ctime := time.Now().Unix()
+	newMsg := chatMessage{0, msg.Sender, msg.Dest, ctime, msg.Data}
+	data, err := json.Marshal(newMsg)
+	if err != nil {
+		fmt.Println("Error 8423521")
+		return
+	}
+	tstr := string(data) + "\n"
 	toRemove := make([]int, 0)
 	for i, v := range listeners {
 		if v.chID == chID {
@@ -26,7 +39,7 @@ func broadcastTo(chID int64, data []byte) {
 						recover() //! WARN
 					}
 				})()
-				v.conn.Write(data)
+				v.conn.Write([]byte(tstr))
 				good = true
 			})()
 		}
