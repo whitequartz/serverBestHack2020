@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -79,6 +80,7 @@ func makeResponse(message string) (string, int64) {
 		id, _ := strconv.Atoi(data[0])
 		issues := getCurIssues(db, id)
 		b, err := json.Marshal(issues)
+		fmt.Println(string(b))
 		if err != nil {
 			return `{"Succ":false}`, -1
 		}

@@ -83,7 +83,7 @@ func getCurIssues(db *sql.DB, id int) []issue {
 		fmt.Println(err)
 	}
 	defer result.Close()
-	var issues []issue
+	issues := []issue{}
 	for result.Next() {
 		issue := issue{}
 		var status int
@@ -104,7 +104,7 @@ func getUserIssues(db *sql.DB, id int) []issue {
 		fmt.Println(err)
 	}
 	defer result.Close()
-	var issues []issue
+	issues := []issue{}
 	for result.Next() {
 		issue := issue{}
 		var status int
@@ -125,7 +125,7 @@ func getAllIssues(db *sql.DB) []issue {
 		fmt.Println(err)
 	}
 	defer result.Close()
-	var issues []issue
+	issues := []issue{}
 	for result.Next() {
 		issue := issue{}
 		var status int
@@ -146,7 +146,7 @@ func getMessagesHistory(db *sql.DB, sender_id int) []chatMessage {
 		fmt.Println(err)
 	}
 	defer result.Close()
-	var messages []chatMessage
+	messages := []chatMessage{}
 	for result.Next() {
 		chatMessage := chatMessage{}
 		err := result.Scan(&chatMessage.ID, &chatMessage.SenderID, &chatMessage.IssueID, &chatMessage.MType, &chatMessage.Content, &chatMessage.Time)
