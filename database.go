@@ -197,17 +197,17 @@ func database() *sql.DB {
 		fmt.Println(err)
 	}
 	// tp: 0 - user, 1 - tp
-	_, err = db.Exec("CREATE TABLE if not exists users (id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, email text, password text, dname text, tp INTEGER)")
+	_, err = db.Exec("CREATE TABLE if not exists users (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email text, password text, dname text, tp INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}
 	// status: 1 - open + tp, 0 - close
-	_, err = db.Exec("CREATE TABLE if not exists issues (issue_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, status INTEGER, dname text, content text, user_id INTEGER, tp_id INTEGER, data_create INTEGER)")
+	_, err = db.Exec("CREATE TABLE if not exists issues (issue_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, status INTEGER, dname text, content text, user_id INTEGER, tp_id INTEGER, data_create INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}
 	// dtype: 0 - user, 1 - tp, 2 - bot
-	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, sender_id INTEGER, issue_id INTEGER, dtype INTEGER, content text, data_create INTEGER)")
+	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, sender_id INTEGER, issue_id INTEGER, dtype INTEGER, content text, data_create INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}

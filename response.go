@@ -158,7 +158,7 @@ func makeResponse(message string) (string, int64) {
 		}
 		raw := chatMessageRaw{}
 		json.Unmarshal(data, &raw)
-		broadcastTo(int64(raw.Dest), raw)
+		broadcastTo(raw.Dest, raw)
 		return `{"Succ":true}`, -1
 
 	default:

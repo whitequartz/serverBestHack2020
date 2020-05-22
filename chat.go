@@ -18,9 +18,9 @@ func initChatsModule() {
 	listeners = make([]listenerConn, 0)
 }
 
-func broadcastTo(chID int64, msg chatMessageRaw) {
+func broadcastTo(chID int, msg chatMessageRaw) {
 	ctime := time.Now().Unix()
-	newMsg := chatMessage{0, msg.Sender, msg.Dest, ctime, msg.Data}
+	newMsg := chatMessage{0, msg.Sender, msg.Dest, int(ctime), msg.Data, 0}
 	data, err := json.Marshal(newMsg)
 	if err != nil {
 		fmt.Println("Error 8423521")
@@ -29,7 +29,7 @@ func broadcastTo(chID int64, msg chatMessageRaw) {
 	tstr := string(data) + "\n"
 	toRemove := make([]int, 0)
 	for i, v := range listeners {
-		if v.chID == chID {
+		if v.chID == int64(chID) {
 			(func() {
 				good := false
 				defer (func() {
