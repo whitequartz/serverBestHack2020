@@ -25,11 +25,11 @@ func getUserId(db *sql.DB, email string) int {
 	defer result.Close()
 	if result.Next() {
 		user := user{}
-		err = result.Scan(&user.id, &user.email, &user.password, &user.dname, &user.tp)
+		err = result.Scan(&user.ID, &user.Email, &user.Password, &user.Dname, &user.Tp)
 		if err != nil {
 			fmt.Println(err)
 		}
-		return user.id
+		return user.ID
 	}
 	return -1
 }
@@ -43,12 +43,12 @@ func checkPassword(db *sql.DB, email string, password string) string {
 	defer result.Close()
 	if result.Next() {
 		user := user{}
-		err = result.Scan(&user.id, &user.email, &user.password, &user.dname, &user.tp)
+		err = result.Scan(&user.ID, &user.Email, &user.Password, &user.Dname, &user.Tp)
 		if err != nil {
 			fmt.Println(err)
 		}
-		if user.password == password {
-			return user.dname
+		if user.Password == password {
+			return user.Dname
 		}
 		return ""
 	}
@@ -63,11 +63,11 @@ func isTp(db *sql.DB, id int) bool {
 	defer result.Close()
 	if result.Next() {
 		user := user{}
-		err = result.Scan(&user.id, &user.email, &user.password, &user.dname, &user.tp)
+		err = result.Scan(&user.ID, &user.Email, &user.Password, &user.Dname, &user.Tp)
 		if err != nil {
 			fmt.Println(err)
 		}
-		return user.tp == 1
+		return user.Tp == 1
 	}
 	return false
 }
@@ -150,7 +150,7 @@ func getMessagesHistory(db *sql.DB, sender_id int) []chatMessage {
 	var messages []chatMessage
 	for result.Next() {
 		chatMessage := chatMessage{}
-		err := result.Scan(&chatMessage.ID, &chatMessage.SenderID, &chatMessage.MType, &chatMessage.Content, &chatMessage.Time)
+		err := result.Scan(&chatMessage.ID, &chatMessage.SenderID, &chatMessage.IssueID, &chatMessage.MType, &chatMessage.Content, &chatMessage.Time)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -183,8 +183,8 @@ func closeIssue(db *sql.DB, issue_id int) {
 	}
 }
 
-func addMessage(db *sql.DB, sender_id int, dtype int, message string, time int) int64 {
-	result, err := db.Exec("INSERT INTO message (sender_id,dtype,content,data_create) VALUES ($1,$2,$3,$4)", sender_id, dtype, message, time)
+func addMessage(db *sql.DB, sender_id int, issue_id, dtype int, message string, time int) int64 {
+	result, err := db.Exec("INSERT INTO message (sender_id,issue_id,dtype,content,data_create) VALUES ($1,$2,$3,$4)", sender_id, issue_id, dtype, message, time)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -208,7 +208,7 @@ func database() *sql.DB {
 		fmt.Println(err)
 	}
 	// dtype: 0 - user, 1 - tp, 2 - bot
-	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, sender_id INTEGER, dtype INTEGER, content text, data_create INTEGER)")
+	_, err = db.Exec("CREATE TABLE if not exists messages (msg_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, sender_id INTEGER, issue_id INTEGER, dtype INTEGER, content text, data_create INTEGER)")
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -23,17 +23,18 @@ type issue struct {
 type chatMessage struct {
 	ID       int
 	SenderID int
+	IssueID  int
 	Time     int
 	Content  string
 	MType    int // 0 - user, 1 - tp, 2 - bot
 }
 
 type user struct {
-	id       int
-	email    string
-	password string
-	dname    string
-	tp       int
+	ID       int
+	Email    string
+	Password string
+	Dname    string
+	Tp       int
 }
 
 type chatMessageRaw struct {
