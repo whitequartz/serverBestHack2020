@@ -75,9 +75,9 @@ func getCurIssues(db *sql.DB, id int) []issue {
 	var result *sql.Rows
 	var err error
 	if isTp(db, id) {
-		result, err = db.Query("SELECT * FROM issues WHERE (tp_id=$1 OR status=$2)", id, 0)
+		result, err = db.Query("SELECT * FROM issues WHERE (tp_id=$1 OR status=$2)", id, 1)
 	} else {
-		result, err = db.Query("SELECT * FROM issues WHERE user_id=$1", id)
+		result, err = db.Query("SELECT * FROM issues WHERE (user_id=$1 AND status=$2)", id, 1)
 	}
 	if err != nil {
 		fmt.Println(err)

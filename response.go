@@ -231,7 +231,17 @@ func makeResponse(message string) (string, int64) {
 			data[i] = strings.Trim(data[i], " \n\t")
 		}
 		id, _ := strconv.Atoi(data[0])
-		removeIssue(db, id)
+		closeIssue(db, id)
+		return `{"Succ":true}`, -1
+
+	case "ADD_TP_ISSUE":
+		data := strings.Split(message[cmdLen+1:], " ")
+		for i := range data {
+			data[i] = strings.Trim(data[i], " \n\t")
+		}
+		issue_id, _ := strconv.Atoi(data[0])
+		tp_id, _ := strconv.Atoi(data[1])
+		addTpForIssue(db, issue_id, tp_id)
 		return `{"Succ":true}`, -1
 
 	case "EMAIL":
